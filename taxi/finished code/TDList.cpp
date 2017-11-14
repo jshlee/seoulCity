@@ -6,12 +6,10 @@
 #include<istream>
 #include<ostream>
 #include<fstream>
-#include "Setdist.C"
 #include "TDList.h"
-//#include "TDNode.h"
 
-TDlist::TDlist(){
-  TDlist::Count = 0;
+TDList::TDList(){
+  TDList::Count = 0;
   head->nextNode = NULL;
 }
 
@@ -26,7 +24,7 @@ TDNode *TDList::get(int index){
     valid(index);
   }
   catch(const char* msg){
-    cout<<msg<<endl;
+    std::cout<<msg<<std::endl;
     return NULL;//adding TDNode error
   }
 
@@ -48,7 +46,7 @@ void TDList::remove(int index){
     }
   catch(const char* msg)
     {
-      cout<<msg<<endl;
+      std::cout<<msg<<std::endl;
       return;
     }
    
@@ -74,7 +72,7 @@ void TDList::set(int index, TDNode* Data){
     }
   catch(const char* msg)
     {
-      cout<<msg<<endl;
+      std::cout<<msg<<std::endl;
       return;
     }
    TDL* temp = head;
@@ -87,9 +85,9 @@ void TDList::add(TDNode* Data){
   TDL* NewNode = new TDL;
   NewNode->data = Data;
   NewNode->nextNode=NULL;
-  if(Head->nextNode == NULL)
+  if(head->nextNode == NULL)
     {
-      Head->nextNode = NewNode;
+      head->nextNode = NewNode;
     }
   else
     {
@@ -110,7 +108,7 @@ void TDList::add(int index, TDNode* Data){
     }
   catch(const char* msg)
     {
-      cout<<msg<<endl;
+      std::cout<<msg<<std::endl;
       return;
     }
   TDL* NewNode = new TDL;

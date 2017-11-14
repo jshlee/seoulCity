@@ -6,7 +6,6 @@
 #include<istream>
 #include<ostream>
 #include<fstream>
-#include "Setdist.h"
 
 #ifndef TDL_H
 #define TDL_H
@@ -16,7 +15,7 @@ class TDNode;
 
 
 
-class TDlist{
+class TDList{
 private:
   class TDL{
   public:
@@ -28,7 +27,7 @@ private:
   int Count;
   void valid(int count);
 public:
-  TDlist();
+  TDList();
   TDNode* get(int index);//return data
   int size();
   void set(int index, TDNode* Data);//replace data
