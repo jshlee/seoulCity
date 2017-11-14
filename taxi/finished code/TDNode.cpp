@@ -29,7 +29,23 @@ void TDNode::setup(){
     ifstream* chfile = new ifstream(TDNode::fname,ifstream::in);
     
     if (chfile->is_open()){
-      TDNode::data = chfile; 
+      TDNode::data = chfile;
+      string line;
+      int index=0;
+      vector<double> num;
+      while(!TDNode::data->eof()){
+	
+	getline(*TDNode::data,line);
+	size_t site = line.find_first_of(",");
+	double tempid = (double)stoi(line.substr(0,site));
+	if (tempid != index){
+	  index = tempid;
+	  num.push_back(index);
+	}
+	
+	
+      }
+      TDNode::tNumber = num.size();
       //TDNode::logdata<< fname <<" : on loaded" <<endl;
       TDNode::valid = true;
     }

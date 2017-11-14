@@ -28,6 +28,7 @@ private:
   //remember last info
   double lastId, lasttime;
   size_t last;
+  int tNumber=0;
 
 public:
   //constructor
@@ -42,9 +43,11 @@ public:
   void setup();
   //void set_input(ifstream &taxilist);
   void generate();
+  int number();
   
 };
 
+int TDNode::number(){ return TDNode::tNumber;}
 
 	
  
