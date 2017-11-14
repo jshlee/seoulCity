@@ -5,25 +5,29 @@
 #include<iostream>
 #include<istream>
 #include<ostream>
+#include<fstream>
 #include "Setdist.C"
 using namespace std;
 
 class TaxiData{
 private:
   int listnum=0;
-  string flist[100];
+  string fname[100];
   string folder = "/classified";
+  ofstream logdata;
+  
+  int classify(double taxi_x, double taxi_y);//classify the taxi`s local destrict by GPS location
   
 public:
-  taxiData();
+  TaxiData();
   void set_input(ifstream &taxilist);
-  
   void generate();
-  int classify(double taxi_x, double taxi_y);
+  
 };
 
 TaxiData::TaxiData(){
-  Setdist();
+  logdata = ofstream("Taxidata.log",ios_base::app);
+  
 }
 
 void TaxiData::set_input(ifstream &taxilist){
@@ -33,41 +37,46 @@ void TaxiData::set_input(ifstream &taxilist){
   
   while(!taxilist.eof()){
     taxilist.getline(buf,500);
-    flist[listnum] = buf;
-    ifstream chfile (flist[listnum],ifstream::in);
+    fname[listnum] = buf;
+    ifstream chfile (fname[listnum],ifstream::in);
+    
     if (chfile.is_open()){
       
-      cout<< flist[listnum] <<" : on loaded" <<endl;
+      logdata<< fname[listnum] <<" : on loaded" <<endl;
       listnum++;
     }
     else{
-      if (flist[listnum].length()!=0){
-      cout<< flist[listnum] << " : loading fail" << endl;
+      if (fname[listnum].length()!=0){
+      logdata<< fname[listnum] << " : loading fail" << endl;
       }
     }
       
     if (listnum==100)
       {
-	cout<< "There is too many file. just 100 files loaded"<<endl;
+	logdata<< "There is too many file. just 100 files loaded"<<endl;
 	break;
       }
   }
-  cout << listnum << " file(s) checking finished" <<endl;
-  cout<<"Now working"<< endl;
+  logdata << listnum << " file(s) checking finished" <<endl;
+  
 }
 
 void TaxiData::generate(){
-  
+  Setdist();
   int checknum=0;
+  if(listnum == 0){
+    logdata<<"Generating error : no files!"<<endl;
+    return;
+  }
   while(checknum!=listnum){
     
-    cout<< "Processing......("<<checknum+1<<"/"<<listnum<<")"<<"    ";
+    logdata<< "Processing......("<<checknum+1<<"/"<<listnum<<")"<<"    ";
     
-    ifstream taxidata(flist[checknum],ios_base::in);
-    size_t dot = flist[checknum].find("-")-4;
-    flist[checknum] = flist[checknum].substr(dot);
-    flist[checknum].insert(0,"/home/jeonghun/classified/");
-    ofstream newdata(flist[checknum],ios_base::out);
+    ifstream taxidata(fname[checknum],ios_base::in);
+    size_t dot = fname[checknum].find("-")-4;
+    fname[checknum] = fname[checknum].substr(dot);
+    fname[checknum].insert(0,"/home/jeonghun/classified/");
+    ofstream newdata(fname[checknum],ios_base::out);
     char buf[100];
     if (taxidata.is_open()){
       string line;
@@ -98,16 +107,16 @@ void TaxiData::generate(){
 	  newdata.precision(0);
 	  newdata <<fixed << id << "," << tx<< "," <<ty<< "," <<tz<< "," <<time<< "," <<angle<< "," <<tv<< "," <<vali<< "," <<pass<< "," <<dist<<endl;
 	  
-	  //cout.precision(0);
-	  //cout <<fixed << id << "," << tx<< "," <<ty<< "," <<tz<< "," <<time<< "," <<angle<< "," <<tv<< "," <<vali<< "," <<pass<< "," <<dist<<endl;
+	  //logdata.precision(0);
+	  //logdata <<fixed << id << "," << tx<< "," <<ty<< "," <<tz<< "," <<time<< "," <<angle<< "," <<tv<< "," <<vali<< "," <<pass<< "," <<dist<<endl;
 	}
-       cout<<"done."<<endl;
-
+       logdata<<"done."<<endl;
+       
     }
    checknum++;
    
   }
-  
+ logdata<< "Classification finished" << endl;
 }
 
 
@@ -156,6 +165,7 @@ int main(){
   ifstream list("filelist");
   taxi->set_input(list);
   taxi->generate();
-  cout<< "Classification finished" << endl;
+  
+  cout<< "Classification finished. check the taxidata.log." << endl;
   return 0;
 }
