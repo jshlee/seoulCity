@@ -23,37 +23,51 @@ TDNode::TDNode(const char* name){
   TDNode::setup();
 }
 
+TDNode::TDNode(const char* name,const char* date){
+  char log[50];
+  sprintf(log,"%sTaxidata.log",date);
+  TDNode::logdata = new ofstream(log,ios_base::app);
+  TDNode::fname  = name;
+  TDNode::setup();
+}
+
 void TDNode::setup(){
   
 
-    ifstream* chfile = new ifstream(TDNode::fname,ifstream::in);
+  ifstream* chfile = new ifstream(TDNode::fname,ifstream::in);
     
-    if (chfile->is_open()){
-      TDNode::data = chfile;
-      string line;
-      int index=0;
-      vector<double> num;
-      while(!TDNode::data->eof()){
+  if (chfile->is_open()){
+    TDNode::data = chfile;
+    string line;
+    int index=0;
+    
+    double tempid;
+    while(!TDNode::data->eof()){
 	
-	getline(*TDNode::data,line);
-	size_t site = line.find_first_of(",");
-	double tempid = (double)stoi(line.substr(0,site));
-	if (tempid != index){
-	  index = tempid;
-	  num.push_back(index);
-	}
+      getline(*TDNode::data,line);
+      if(line.size()==0) continue;
+      size_t site = line.find_first_of(",");
+      string cutoff = line.substr(0,site);
+
+      //if (cutoff.size()!=0){
+      tempid = stod(cutoff);
+      //}
+      if (tempid != index){
+      index = tempid;
+      TDNode::tlist.insert(index);
+      }
 	
 	
       }
-      TDNode::tNumber = num.size();
-      //TDNode::logdata<< fname <<" : on loaded" <<endl;
-      TDNode::valid = true;
+    TDNode::tNumber = TDNode::tlist.size();
+    *TDNode::logdata<< TDNode::fname <<" : on loaded" <<endl;
+    TDNode::valid = true;
+  }
+  else{
+    if (TDNode::fname.length()!=0){
+      *TDNode::logdata<< TDNode::fname << " : loading fail" << endl;
     }
-    else{
-      if (TDNode::fname.length()!=0){
-        //TDNode::logdata<< TDNode::fname << " : loading fail" << endl;
-      }
-    }
+  }
       
     
   
@@ -158,9 +172,9 @@ TData* TDNode::getbyID(double ID){
     TData* result = new TData[15];
     while(!TDNode::data->eof()){
       getline(*TDNode::data,line);
-      
+      if(line.size()==0) continue;
       size_t site = line.find_first_of(",");
-      double tempid = (double)stoi(line.substr(0,site));
+      double tempid = stod(line.substr(0,site));
       if (tempid == ID){
 	result[index++] = TDNode::convert(line.c_str());
       }
@@ -179,22 +193,33 @@ TData* TDNode::getbyID(double ID){
 
 bool TDNode::checkID(double ID){
   if (TDNode::valid){
+    if(tlist.find(ID) != tlist.end()){
+      return true;
+    }
+    else{
+      return false;
+    }
+  }
+    /*
     this->data->clear();
     this->data->seekg(0, ios_base::beg);
+
+
+    
     bool founded = false;
     string line;
     while(!TDNode::data->eof()){
       getline(*TDNode::data,line);
-      
+      if(line.size()==0) continue;
       size_t site = line.find_first_of(",");
-      double tempid = (double)stoi(line.substr(0,site));
+      double tempid = stod(line.substr(0,site));
       if (tempid == ID){
 	founded = true;
 	return founded;
       }
     }
     return founded;
-  }
+  }*/
 }
 
 TData* TDNode::puton(double ID){
@@ -207,9 +232,9 @@ TData* TDNode::puton(double ID){
     TData* result = new TData;
     while(!TDNode::data->eof()){
       getline(*TDNode::data,line);
-      
+      if(line.size()==0) continue;
       size_t site = line.find_first_of(",");
-      double tempid = (double)stoi(line.substr(0,site));
+      double tempid = stod(line.substr(0,site));
       if (tempid == ID){
 	founded = true;
 	*result = TDNode::convert(line.c_str());
@@ -240,9 +265,9 @@ TData* TDNode::putoff(double ID){
     TData* result = new TData;
     while(!TDNode::data->eof()){
       getline(*TDNode::data,line);
-      
+      if(line.size()==0) continue;
       size_t site = line.find_first_of(",");
-      double tempid = (double)stoi(line.substr(0,site));
+      double tempid = stod(line.substr(0,site));
       if (tempid == ID){
 	founded = true;
 	*result = TDNode::convert(line.c_str());
@@ -270,17 +295,17 @@ TData TDNode::convert(const char* dataline){
   string line = dataline;
   
   size_t site = line.find_first_of(",");
-  double tempdata = (double)stoi(line.substr(0,site));
+  double tempdata = stod(line.substr(0,site));
   line = line.substr(0,site+1);
   temp.id = tempdata;
   	
   site = line.find_first_of(",");
-  tempdata = (double)stoi(line.substr(0,site));
+  tempdata = stod(line.substr(0,site));
   line = line.substr(0,site+1);
   temp.x = tempdata;
 	
   site = line.find_first_of(",");
-  tempdata = (double)stoi(line.substr(0,site));
+  tempdata = stod(line.substr(0,site));
   line = line.substr(0,site+1);
   temp.y = tempdata;
 
@@ -290,7 +315,7 @@ TData TDNode::convert(const char* dataline){
   temp.z = tempdata;
 
   site = line.find_first_of(",");
-  tempdata = (double)stoi(line.substr(0,site));
+  tempdata = stod(line.substr(0,site));
   line = line.substr(0,site+1);
   temp.time = tempdata;
 

@@ -1,10 +1,8 @@
-#include"TDNode.h"
+#include"TDManager.h"
 
 int main(){
   cout<<"Hello world!"<<endl;
-  
-  TDNode taxidata();
-  TDNode taxi2("name.ddd");  
-  cout << taxi2.checkID(1234564)<<endl;
+  const char data[50] ="/home/jeong/taxidatasample/data";
+  TDManager* dataset= new TDManager("/home/jeong/taxidatasample/data/");
   return 0;
 }

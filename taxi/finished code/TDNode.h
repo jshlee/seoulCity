@@ -5,6 +5,7 @@
 #include<iostream>
 #include<istream>
 #include<ostream>
+#include<set>
 #include<fstream>
 #include "Setdist.h"
 
@@ -14,11 +15,13 @@ using namespace std;
 
 class TDNode{
 private:
+  set<double> tlist;
   string fname;
   ofstream* logdata;
   bool classified = false;
   bool valid = false;
   ifstream* data;
+  char* date;
   //classify the taxi`s local destrict by GPS location
   int classify(double taxi_x, double taxi_y);
   
@@ -34,7 +37,7 @@ public:
   //constructor
   TDNode();
   TDNode(const char* name);
-  
+  TDNode(const char* name,const char* date);
   TData* getbyID(double ID);
   bool checkID(double ID);
   //TData* getbyTime();
@@ -43,13 +46,12 @@ public:
   void setup();
   //void set_input(ifstream &taxilist);
   void generate();
-  int number();
+  int number(){ return tNumber;};
+  bool is_valid(){ return valid;};
   
 };
 
-int TDNode::number(){ return TDNode::tNumber;}
 
-	
  
 #endif
 
