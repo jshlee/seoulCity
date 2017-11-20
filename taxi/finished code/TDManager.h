@@ -29,12 +29,13 @@ private:
   bool valid;
   void setup();
   ofstream* logdata;
+  
 
 public:
   TDManager();
   TDManager(const char* folder);
   void set_input(const char* folder);
-  
+  void datepath(){ std::cout<<this->date<<std::endl;};
   void extTripData();
   //void extRootData();
 };
@@ -44,37 +45,6 @@ public:
 
 
 
-/*void TDNode::set_input(ifstream &taxilist){
- 
-  listnum=0;
-  char buf[500];
-  
-  while(!taxilist.eof()){
-    taxilist.getline(buf,500);
-    fname[listnum] = buf;
-    ifstream chfile (fname[listnum],ifstream::in);
-    
-    if (chfile.is_open()){
-      
-      logdata<< fname[listnum] <<" : on loaded" <<endl;
-      listnum++;
-    }
-    else{
-      if (fname[listnum].length()!=0){
-      logdata<< fname[listnum] << " : loading fail" << endl;
-      }
-    }
-      
-    if (listnum==100)
-      {
-	logdata<< "There is too many file. just 100 files loaded"<<endl;
-	break;
-      }
-  }
-  logdata << listnum << " file(s) checking finished" <<endl;
-  
-}
-*/
 
 
 #endif

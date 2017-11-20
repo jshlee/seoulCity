@@ -21,6 +21,12 @@ TDNode::TDNode(const char* name){
   TDNode::logdata = new ofstream("Taxidata.log",ios_base::app);
   TDNode::fname  = name;
   TDNode::setup();
+  ifstream file(TDNode::fname,ios_base::in);
+  string line;
+  getline(file,line);
+  cout<<fixed;
+  cout.precision(0);
+  TDNode::convert(line.c_str());
 }
 
 TDNode::TDNode(const char* name,const char* date){
@@ -39,13 +45,15 @@ void TDNode::setup(){
   if (chfile->is_open()){
     TDNode::data = chfile;
     string line;
-    int index=0;
+    double index=0;
     
     double tempid;
+    int psg = 2;
+    TData* temp;
     while(!TDNode::data->eof()){
-	
+      size_t tsite = data->tellg();	
       getline(*TDNode::data,line);
-      if(line.size()==0) continue;
+      if(line.size()==0) continue; 
       size_t site = line.find_first_of(",");
       string cutoff = line.substr(0,site);
 
@@ -54,11 +62,37 @@ void TDNode::setup(){
       //}
       if (tempid != index){
       index = tempid;
-      TDNode::tlist.insert(index);
+      TDNode::tset.insert(index);
+      TDNode::tlist[index]=tsite;
+      //TDNode::tlist.push_back(index);
+      psg = 2;
       }
+      
+      /*else{
+	if (index==0) continue;
+	*temp = TDNode::convert(line.c_str());
+	if(psg != 2){
+	  if (!psg){
+	  
+	    if (temp->psg){
+	      
+	      TDNode::onlist[index]=tsite;
+	    }
+	  }
+	}
+	if(psg != 2){
+	  if (psg){
+	  
+	    if (!temp->psg){
+	     
+	      TDNode::offlist[index]=tsite;
+	    }
+	  }
+	}
+	psg = temp->psg;
+	}*/
 	
-	
-      }
+    }
     TDNode::tNumber = TDNode::tlist.size();
     *TDNode::logdata<< TDNode::fname <<" : on loaded" <<endl;
     TDNode::valid = true;
@@ -169,6 +203,7 @@ TData* TDNode::getbyID(double ID){
     this->data->seekg(0, ios_base::beg);
     string line;
     int index  =  0;
+    bool founded = false;
     TData* result = new TData[15];
     while(!TDNode::data->eof()){
       getline(*TDNode::data,line);
@@ -176,13 +211,15 @@ TData* TDNode::getbyID(double ID){
       size_t site = line.find_first_of(",");
       double tempid = stod(line.substr(0,site));
       if (tempid == ID){
+	founded = true;
 	result[index++] = TDNode::convert(line.c_str());
       }
       if(index>14){
 	return result;
       }
     }
-    
+    if (founded) return result;
+    else return NULL;
    
     
   }
@@ -193,7 +230,7 @@ TData* TDNode::getbyID(double ID){
 
 bool TDNode::checkID(double ID){
   if (TDNode::valid){
-    if(tlist.find(ID) != tlist.end()){
+    if(tset.find(ID) != tset.end()){
       return true;
     }
     else{
@@ -225,9 +262,9 @@ bool TDNode::checkID(double ID){
 TData* TDNode::puton(double ID){
   if (TDNode::valid){
     this->data->clear();
-    this->data->seekg(0, ios_base::beg);
+    this->data->seekg(TDNode::last, ios::beg);//TDNode::last,
     bool founded = false;
-    int psg = -1;
+    int psg = 2;
     string line;
     TData* result = new TData;
     while(!TDNode::data->eof()){
@@ -238,10 +275,20 @@ TData* TDNode::puton(double ID){
       if (tempid == ID){
 	founded = true;
 	*result = TDNode::convert(line.c_str());
+	
+	TDNode::last = TDNode::data->tellg();
       }
-      if(psg != -1){
+      else{
+	if(founded) break;
+	continue;
+      }
+      if(psg != 2){
 	if (!psg){
+	  
 	  if (result->psg){
+	    /*std::cout<<psg<<endl;
+	    std::cout<<line<<":"<<endl;
+	    result->show();*/
 	    return result;
 	  }
 	}
@@ -251,9 +298,51 @@ TData* TDNode::puton(double ID){
   }
   else {
     return NULL;
-  }      
+  }
+  return NULL;
 }
-
+TData* TDNode::puton(map<double,size_t>::iterator ID){
+  if (TDNode::valid){
+    this->data->clear();
+    this->data->seekg((*ID).second, ios::beg);//TDNode::last,
+    bool founded = false;
+    int psg = 2;
+    string line;
+    TData* result = new TData;
+    while(!TDNode::data->eof()){
+      getline(*TDNode::data,line);
+      if(line.size()==0) continue;
+      size_t site = line.find_first_of(",");
+      double tempid = stod(line.substr(0,site));
+      if (tempid == (*ID).first){
+	founded = true;
+	*result = TDNode::convert(line.c_str());
+	
+	TDNode::last = TDNode::data->tellg();
+      }
+      else{
+	if(founded) break;
+	continue;
+      }
+      if(psg != 2){
+	if (!psg){
+	  
+	  if (result->psg){
+	    /*std::cout<<psg<<endl;
+	    std::cout<<line<<":"<<endl;
+	    result->show();*/
+	    return result;
+	  }
+	}
+      }
+      psg = result->psg;
+    }
+  }
+  else {
+    return NULL;
+  }
+  return NULL;
+}
 
 TData* TDNode::putoff(double ID){
   if (TDNode::valid){
@@ -265,16 +354,68 @@ TData* TDNode::putoff(double ID){
     TData* result = new TData;
     while(!TDNode::data->eof()){
       getline(*TDNode::data,line);
+      
       if(line.size()==0) continue;
       size_t site = line.find_first_of(",");
       double tempid = stod(line.substr(0,site));
       if (tempid == ID){
+	//std::cout<<line<<":"<<endl;
 	founded = true;
 	*result = TDNode::convert(line.c_str());
+      }
+      else{
+	if(founded) break;
       }
       if(psg != -1){
 	if (psg){
 	  if (!result->psg){
+	    std::cout<<line<<":"<<endl;
+	    result->show();
+	    return result;
+	    
+	  }
+	}
+      }
+      psg = result->psg;
+    }
+  }
+  else {
+    return NULL;
+  }
+  return NULL;
+}
+
+TData* TDNode::putoff(map<double,size_t>::iterator ID){
+  if (TDNode::valid){
+    this->data->clear();
+    this->data->seekg((*ID).second, ios::beg);//TDNode::last,
+    bool founded = false;
+    int psg = 2;
+    string line;
+    TData* result = new TData;
+    while(!TDNode::data->eof()){
+      getline(*TDNode::data,line);
+      
+      if(line.size()==0) continue;
+      size_t site = line.find_first_of(",");
+      double tempid = stod(line.substr(0,site));
+      if (tempid == (*ID).first){
+	founded = true;
+	*result = TDNode::convert(line.c_str());
+	//result->show();
+	//TDNode::last = TDNode::data->tellg();
+      }
+      else{
+	if(founded) break;
+	continue;
+      }
+      if(psg != 2){
+	if (psg){
+	  
+	  if (!result->psg){
+	    /*std::cout<<psg<<endl;
+	    std::cout<<line<<":"<<endl;
+	    result->show();*/
 	    return result;
 	  }
 	}
@@ -284,10 +425,9 @@ TData* TDNode::putoff(double ID){
   }
   else {
     return NULL;
-  }      
+  }
+  return NULL;
 }
-
-
 
 
 TData TDNode::convert(const char* dataline){
@@ -296,47 +436,55 @@ TData TDNode::convert(const char* dataline){
   
   size_t site = line.find_first_of(",");
   double tempdata = stod(line.substr(0,site));
-  line = line.substr(0,site+1);
+  line = line.substr(site+1);
   temp.id = tempdata;
-  	
+
+    
   site = line.find_first_of(",");
   tempdata = stod(line.substr(0,site));
-  line = line.substr(0,site+1);
+  line = line.substr(site+1);
   temp.x = tempdata;
+
 	
   site = line.find_first_of(",");
   tempdata = stod(line.substr(0,site));
-  line = line.substr(0,site+1);
+  line = line.substr(site+1);
   temp.y = tempdata;
+
 
   site = line.find_first_of(",");
   tempdata = stoi(line.substr(0,site));
-  line = line.substr(0,site+1);
+  line = line.substr(site+1);
   temp.z = tempdata;
+
 
   site = line.find_first_of(",");
   tempdata = stod(line.substr(0,site));
-  line = line.substr(0,site+1);
+  line = line.substr(site+1);
   temp.time = tempdata;
+  
 
   site = line.find_first_of(",");
   tempdata = stoi(line.substr(0,site));
-  line = line.substr(0,site+1);
+  line = line.substr(site+1);
   temp.angle = tempdata;
+  
 
   site = line.find_first_of(",");
   tempdata = stoi(line.substr(0,site));
-  line = line.substr(0,site+1);
+  line = line.substr(site+1);
   temp.v = tempdata;
+  
 
   site = line.find_first_of(",");
   tempdata = stoi(line.substr(0,site));
-  line = line.substr(0,site+1);
+  line = line.substr(site+1);
   temp.valid = tempdata;
+  
   if (TDNode::classified){
     site = line.find_first_of(",");
     tempdata = stoi(line.substr(0,site));
-    line = line.substr(0,site+1);
+    line = line.substr(site+1);
     temp.psg = tempdata;
 	  
     site = line.find_first_of(",");
