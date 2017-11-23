@@ -7,10 +7,12 @@
 #include<ostream>
 #include<fstream>
 #include "TDList.h"
+#include "TDNode.h"
 
 TDList::TDList(){
   TDList::Count = 0;
-  head->nextNode = NULL;
+  TDList::head->nextNode = NULL;
+  
 }
 
 void TDList::valid(int count){
@@ -85,19 +87,20 @@ void TDList::add(TDNode* Data){
   TDL* NewNode = new TDL;
   NewNode->data = Data;
   NewNode->nextNode=NULL;
-  if(head->nextNode == NULL)
-    {
-      head->nextNode = NewNode;
-    }
-  else
-    {
-      TDL* temp = head;
-      while(temp->nextNode != NULL)
-	{
-	  temp = temp->nextNode;
-	}
-      temp->nextNode = NewNode;
-    }
+  
+  if(this->head->nextNode == NULL){
+    
+    TDList::head->nextNode = NewNode;
+  }
+  else{
+    
+    TDL* temp = TDList::head;
+    while(temp->nextNode != NULL)
+      {
+	temp = temp->nextNode;
+      }
+    temp->nextNode = NewNode;
+  }
   TDList::Count++;
   
 }

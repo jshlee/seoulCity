@@ -1,5 +1,5 @@
 #include<stdio.h>
-
+#include<iostream>
 
 #ifndef DSTRUCT_H
 #define DSTRUCT_H
@@ -21,6 +21,7 @@ public:
   bool psg;
   int dist;
   bool validity = true;
+  void show(){std::cout<<this->id<<","<<this->x<<","<<this->y<<","<<this->z<<","<<this->time<<","<<this->angle<<","<<this->v<<","<<this->psg<<std::endl;};
 };
   
 

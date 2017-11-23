@@ -20,7 +20,7 @@ private:
   class TDL{
   public:
     TDL* nextNode;
-    TDNode *data;
+    TDNode* data;
   };
   
   TDL* head = new TDL;
